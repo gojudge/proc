@@ -58,11 +58,11 @@ func reloadProcessTree() {
 
 func newProc(pid int64) {
 	content, err := com.ReadFileString(fmt.Sprintf("/proc/%d/status", pid))
-	if err == nil {
+	if err != nil {
 		content = ""
 	}
 
-	proc := Process{pid: pid}
+	proc := Process{pid: pid, info: map[string]string{}}
 	proc.parseProcInfo(content)
 	procMap[pid] = proc
 }
@@ -76,6 +76,7 @@ func scanProc() {
 			newProc(pid)
 		}
 	}
+
 }
 
 func scanRelative() {
