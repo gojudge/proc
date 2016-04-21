@@ -1,6 +1,7 @@
 package proc
 
 import (
+	"fmt"
 	"github.com/gogather/com"
 	"io/ioutil"
 	"strconv"
@@ -15,8 +16,12 @@ type Process struct {
 	info   map[string]string
 }
 
-func (pro *Process) GetPid() {
+func (pro *Process) GetPid() int64 {
 	return pro.pid
+}
+
+func (pro *Process) GetName() string {
+	return pro.info["Name"]
 }
 
 func (pro *Process) GetParentProc() *Process {
@@ -52,7 +57,11 @@ func reloadProcessTree() {
 }
 
 func newProc(pid int64) {
-	content := com.ReadFileString(fmt.Sprintf("/proc/%d/status", pid))
+	content, err := com.ReadFileString(fmt.Sprintf("/proc/%d/status", pid))
+	if err == nil {
+		content = ""
+	}
+
 	proc := Process{pid: pid}
 	proc.parseProcInfo(content)
 	procMap[pid] = proc
@@ -64,19 +73,21 @@ func scanProc() {
 	for _, file := range files {
 		pid, err := strconv.ParseInt(file.Name(), 10, 64)
 		if file.IsDir() && err == nil {
-			procMap[pid] = newProc(pid)
+			newProc(pid)
 		}
 	}
 }
 
 func scanRelative() {
-	for key, proc := range procMap {
+	for _, proc := range procMap {
 		s_ppid := proc.info["PPid"]
 		ppid, err := strconv.ParseInt(s_ppid, 10, 64)
-		pproc := procMap[ppid]
-		if pproc != nil {
-			proc.pp = &pproc
-			pproc.cp = append(pproc.cp, &proc)
+		if err == nil {
+			pproc, ok := procMap[ppid]
+			if ok {
+				proc.pp = &pproc
+				pproc.cp = append(pproc.cp, &proc)
+			}
 		}
 	}
 }
@@ -84,5 +95,10 @@ func scanRelative() {
 // get process
 func GetProc(pid int64) *Process {
 	reloadProcessTree()
-	return &procMap[pid]
+	p, ok := procMap[pid]
+	if ok {
+		return &p
+	} else {
+		return nil
+	}
 }
