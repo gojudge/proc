@@ -42,7 +42,7 @@ func (pro *Process) KillProcChain() {
 	cp := pro.cp
 	if len(cp) > 0 {
 		for i := 0; i < len(cp); i++ {
-			cp[i].KillProChain()
+			cp[i].KillProcChain()
 		}
 	} else {
 		pro.Kill()
@@ -50,7 +50,11 @@ func (pro *Process) KillProcChain() {
 }
 
 func (pro *Process) Kill() {
-	proc := os.FindProcess(int(pro.pid))
+	proc, err := os.FindProcess(int(pro.pid))
+	if err != nil {
+		return
+	}
+
 	proc.Kill()
 	pro.pp.removeChildProcessInfoByPid(pro.pid)
 }
