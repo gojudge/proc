@@ -60,7 +60,7 @@ func (pro *Process) Kill() {
 }
 
 // remove process info from parents process in cp array
-func (pro *Process) removeChildProcessInfoByPid(int64 pid) {
+func (pro *Process) removeChildProcessInfoByPid(pid int64) {
 	var ncps []*Process
 	cps := pro.cp
 	for i := 0; i < len(cps); i++ {
