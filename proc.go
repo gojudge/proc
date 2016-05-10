@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gogather/com"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -30,6 +31,39 @@ func (pro *Process) GetParentProc() *Process {
 
 func (pro *Process) GetChildrenProc() []*Process {
 	return pro.cp
+}
+
+func (pro *Process) KillProcChain() {
+	// did not kill init proc chain
+	if pro.pid == 1 {
+		return
+	}
+
+	if len(cp) > 0 {
+		for i := 0; i < len(cp); i++ {
+			cp[i].KillProChain()
+		}
+	} else {
+		pro.Kill()
+	}
+}
+
+func (pro *Process) Kill() {
+	proc := os.FindProcess(int(pro.pid))
+	proc.Kill()
+	pro.pp.removeChildProcessInfoByPid(pro.pid)
+}
+
+// remove process info from parents process in cp array
+func (pro *Process) removeChildProcessInfoByPid(int64 pid) {
+	var ncps []*Process
+	cps := pro.cp
+	for i := 0; i < len(cps); i++ {
+		if cps[i].pid != pid {
+			ncps = append(ncps, cps[i])
+		}
+	}
+	pro.cp = ncps
 }
 
 func (pro *Process) parseProcInfo(content string) {
