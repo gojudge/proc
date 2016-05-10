@@ -39,6 +39,7 @@ func (pro *Process) KillProcChain() {
 		return
 	}
 
+	cp := pro.cp
 	if len(cp) > 0 {
 		for i := 0; i < len(cp); i++ {
 			cp[i].KillProChain()
