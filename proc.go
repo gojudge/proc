@@ -33,16 +33,24 @@ func (pro *Process) GetChildrenProc() []*Process {
 	return pro.cp
 }
 
-func (pro *Process) KillProcChain() {
-	// did not kill init proc chain
-	if pro.pid == 1 {
-		return
+// kill process chain with reverse order
+func (pro *Process) KillProcChainReverse() {
+	for {
+		pro.killNoSonTailProc()
+		if len(pro.cp) <= 0 {
+			break
+		}
 	}
 
+	pro.killNoSonTailProc()
+}
+
+// kill process which without son process in the tails
+func (pro *Process) killNoSonTailProc() {
 	cp := pro.cp
 	if len(cp) > 0 {
 		for i := 0; i < len(cp); i++ {
-			cp[i].KillProcChain()
+			cp[i].killNoSonTailProc()
 		}
 	} else {
 		pro.Kill()
