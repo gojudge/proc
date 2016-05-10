@@ -87,7 +87,8 @@ func (pro *Process) parseProcInfo(content string) {
 }
 
 var (
-	procMap map[int64]Process
+	procMap   map[int64]*Process
+	procSlice []Process
 )
 
 func reloadProcessTree() {
@@ -103,12 +104,13 @@ func newProc(pid int64) {
 
 	proc := Process{pid: pid, info: map[string]string{}}
 	proc.parseProcInfo(content)
-	procMap[pid] = proc
+	procSlice = append(procSlice, proc)
+	procMap[pid] = &procSlice[len(procSlice)-1]
 }
 
 func scanProc() {
 	files, _ := ioutil.ReadDir(`/proc/`)
-	procMap = map[int64]Process{}
+	procMap = map[int64]*Process{}
 	for _, file := range files {
 		pid, err := strconv.ParseInt(file.Name(), 10, 64)
 		if file.IsDir() && err == nil {
@@ -123,10 +125,10 @@ func scanRelative() {
 		s_ppid := proc.info["PPid"]
 		ppid, err := strconv.ParseInt(s_ppid, 10, 64)
 		if err == nil {
-			pproc, ok := procMap[ppid]
+			_, ok := procMap[ppid]
 			if ok {
-				proc.pp = &pproc
-				pproc.cp = append(pproc.cp, &proc)
+				proc.pp = procMap[ppid]
+				procMap[ppid].cp = append(procMap[ppid].cp, proc)
 			}
 		}
 	}
@@ -137,7 +139,7 @@ func GetProc(pid int64) *Process {
 	reloadProcessTree()
 	p, ok := procMap[pid]
 	if ok {
-		return &p
+		return p
 	} else {
 		return nil
 	}
