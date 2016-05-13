@@ -35,6 +35,10 @@ func (pro *Process) GetChildrenProc() []*Process {
 
 // kill process chain with reverse order
 func (pro *Process) KillProcChainReverse() {
+	if pro.pid == 1 {
+		return
+	}
+
 	for {
 		pro.killNoSonTailProc()
 		if len(pro.cp) <= 0 {
