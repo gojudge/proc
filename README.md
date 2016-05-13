@@ -1,4 +1,4 @@
-# proc
+# proc [![Build Status](https://travis-ci.org/gojudge/proc.svg?branch=master)](https://travis-ci.org/gojudge/proc)
 
 - get process info
 - get process chain
